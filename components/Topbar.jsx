@@ -102,7 +102,12 @@ const Navbar = () => {
 
           {/* Right Section */}
           <div className="flex items-center gap-4">
-            <Bell className="hidden md:flex w-6 h-6 cursor-pointer hover:text-red-500 transition-colors" />
+            {user ? (
+              ""
+            ) : (
+              <Bell className=" md:flex w-6 h-6 cursor-pointer hover:text-red-500 transition-colors" />
+            )}
+            
 
             {user ? (
               <div className="flex items-center gap-3">
@@ -116,9 +121,13 @@ const Navbar = () => {
                     )}&background=ef4444&color=fff`;
                   }}
                 />
-                <Button>
-                  <Link href={`/savedname`} alt="saved names">
+                <Button
+                  asChild
+                  className="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md transition-colors"
+                >
+                  <Link href="/savedname">
                     <Save size={18} />
+                    <span>Saved</span>
                   </Link>
                 </Button>
                 <span className="hidden md:block text-sm font-medium">
