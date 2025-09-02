@@ -14,12 +14,22 @@ import {
   Download,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const SavedNamesPage = () => {
+  const router = useRouter();
   const { user } = useAuthStore();
   const [names, setNames] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Redirect unauthorized users
+  useEffect(() => {
+    if (!user) {
+      router.replace("/"); // redirect
+    }
+  }, [user, router]);
+
+  // Fetch saved names
   useEffect(() => {
     if (!user) return;
 
@@ -50,7 +60,7 @@ const SavedNamesPage = () => {
     try {
       await navigator.clipboard.writeText(name);
       toast.success("Name copied to clipboard!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to copy name");
     }
   };
@@ -68,45 +78,29 @@ const SavedNamesPage = () => {
 
       setNames((prev) => prev.filter((item) => item._id !== nameId));
       toast.success("Name deleted successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete name");
     }
   };
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <div className="text-center">
-          <BookmarkIcon className="h-20 w-20 text-amber-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">
-            Access Required
-          </h2>
-          <p className="text-gray-400">
-            Please log in to view your saved business names.
-          </p>
-        </div>
-      </div>
-    );
+    return null; // prevents flashing before redirect
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Header Section */}
       <div className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="p-3 bg-amber-500/20 rounded-full">
-                <BookmarkIcon className="h-8 w-8 text-amber-500" />
-              </div>
-              <h1 className="text-4xl font-bold text-white">
-                Your Saved Names
-              </h1>
+        <div className="max-w-7xl mx-auto px-4 py-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="p-3 bg-amber-500/20 rounded-full">
+              <BookmarkIcon className="h-8 w-8 text-amber-500" />
             </div>
-            <p className="text-gray-400 text-lg">
-              Manage and explore your collection of business names
-            </p>
+            <h1 className="text-4xl font-bold text-white">Your Saved Names</h1>
           </div>
+          <p className="text-gray-400 text-lg">
+            Manage and explore your collection of business names
+          </p>
         </div>
       </div>
 
@@ -201,8 +195,8 @@ const SavedNamesPage = () => {
               ))}
             </div>
           </>
-        ) : names.length === 0 ? (
-          // No saved names at all
+        ) : (
+          // Empty State
           <div className="text-center py-20">
             <div className="max-w-md mx-auto">
               <div className="p-6 bg-gray-800/30 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
@@ -216,41 +210,12 @@ const SavedNamesPage = () => {
                 your collection.
               </p>
               <Button
-                onClick={() => (window.location.href = "/")}
+                onClick={() => router.push("/")}
                 className="bg-amber-500 hover:bg-amber-600 text-black font-medium"
               >
                 Generate Names Now
                 <ExternalLink className="h-4 w-4 ml-2" />
               </Button>
-            </div>
-          </div>
-        ) : (
-          // No results from search/filter
-          <div className="text-center py-20">
-            <div className="max-w-md mx-auto">
-              <Search className="h-16 w-16 text-gray-500 mx-auto mb-6" />
-              <h2 className="text-xl font-semibold text-white mb-4">
-                No Results Found
-              </h2>
-              <p className="text-gray-400 mb-6">
-                Try adjusting your search terms or filter settings.
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Button
-                  variant="outline"
-                  onClick={() => setSearchTerm("")}
-                  className="text-gray-300 border-gray-600 hover:bg-gray-700"
-                >
-                  Clear Search
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectedKeyword("all")}
-                  className="text-gray-300 border-gray-600 hover:bg-gray-700"
-                >
-                  Show All
-                </Button>
-              </div>
             </div>
           </div>
         )}
