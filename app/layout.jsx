@@ -1,12 +1,15 @@
-import { Afacad_Flux } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Topbar from "@/components/Topbar";
 import { Toaster } from "@/components/ui/sonner";
-const afacad = Afacad_Flux({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+
+// Import the font from the fonts folder (relative to this file)
+const afacad = localFont({
+  src: "../fonts/AfacadFluxvariable.ttf", // adjust path from app/layout.jsx
   display: "swap",
+  variable: "--font-afacad",
 });
+
 export const metadata = {
   title: "NameForge",
   description: "Generate unique business name",

@@ -1,6 +1,7 @@
 // db.js
 import mongoose from "mongoose";
 
+// ❌ Don't use NEXT_PUBLIC_ for database URIs - this exposes it to the client!
 const MONGODB_URI = process.env.NEXT_PUBLIC_MONGO_URI;
 
 if (!MONGODB_URI) {
@@ -26,19 +27,18 @@ async function connectDB() {
   }
 
   if (!cached.promise) {
-    // First time connection attempt
-    cached.promise = mongoose
-      .connect(MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      })
-      .then((mongoose) => mongoose);
+    // ✅ Removed deprecated options - they're not needed in v4.0.0+
+    cached.promise = mongoose.connect(MONGODB_URI).then((mongoose) => {
+      console.log("✅ MongoDB connected successfully");
+      return mongoose;
+    });
   }
 
   try {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
+    console.error("❌ MongoDB connection failed:", e);
     throw e;
   }
 

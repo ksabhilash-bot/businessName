@@ -1,10 +1,11 @@
 "use client";
-import { Bell, LogIn, LogOut, Loader2, AlertCircle } from "lucide-react";
+import { Bell, LogIn, LogOut, Loader2, AlertCircle, Save } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import useAuthStore from "@/store/authStore";
 import { auth, provider } from "@/helpers/firebase";
 import { signInWithPopup } from "firebase/auth";
+import { Button } from "./ui/button";
 
 const Navbar = () => {
   const {
@@ -115,6 +116,11 @@ const Navbar = () => {
                     )}&background=ef4444&color=fff`;
                   }}
                 />
+                <Button>
+                  <Link href={`/savedname`} alt="saved names">
+                    <Save size={18} />
+                  </Link>
+                </Button>
                 <span className="hidden md:block text-sm font-medium">
                   {user.name}
                 </span>

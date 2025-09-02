@@ -5,10 +5,65 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { generatePrompt } from "@/helpers/prompt";
 import useQueryStore from "@/store/queryStore";
 import { Button } from "@/components/ui/button";
+import useAuthStore from "@/store/authStore";
+import { toast } from "sonner";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle, X } from "lucide-react";
 
 const Page = () => {
   const { query, setQuery, resetQuery } = useQueryStore();
+  const { user } = useAuthStore();
+
   const [loading, setLoading] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [selectedNameToSave, setSelectedNameToSave] = useState("");
+
+  const savename = async (selectedName) => {
+    if (!user) {
+      return toast("Please Login to Save Name");
+    }
+
+    try {
+      const res = await fetch("/api/savename", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          keyword: query.keyword,
+          name: selectedName,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Failed to save name");
+
+      toast.success("Name saved successfully!");
+      setShowConfirmation(false);
+      setSelectedNameToSave("");
+    } catch (error) {
+      console.error("Save name error:", error);
+      toast.error("Failed to save name");
+    }
+  };
+
+  const handleNameClick = (name) => {
+    if (!user) {
+      return toast("Please Login to Save Name");
+    }
+
+    setSelectedNameToSave(name);
+    setShowConfirmation(true);
+  };
+
+  const confirmSave = () => {
+    savename(selectedNameToSave);
+  };
+
+  const cancelSave = () => {
+    setShowConfirmation(false);
+    setSelectedNameToSave("");
+  };
 
   const fetchBusinessName = async () => {
     try {
@@ -34,6 +89,7 @@ const Page = () => {
       setQuery({ names: parsed.names });
     } catch (error) {
       console.error("Error fetching business names:", error);
+      toast.error("Error generating names");
     } finally {
       setLoading(false);
     }
@@ -53,12 +109,43 @@ const Page = () => {
         </div>
 
         <div className="flex flex-col xl:flex-row gap-4 sm:gap-6 lg:gap-8 pb-8">
-        
           <div className="w-full xl:w-80 xl:flex-shrink-0">
             <Sidebar />
           </div>
 
           <div className="flex-1 min-w-0">
+            {/* Confirmation Alert */}
+            {showConfirmation && (
+              <div className="fixed inset-0 bg-black/70  flex items-center justify-center z-50 p-4">
+                <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+                  <Alert className="bg-gray-800 border-gray-600">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <AlertTitle className="text-white">Confirm Save</AlertTitle>
+                    <AlertDescription className="text-gray-300 mb-4">
+                      Are you sure you want to save "{selectedNameToSave}" for
+                      keyword "{query.keyword}"?
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="flex gap-3 mt-4">
+                    <Button
+                      onClick={confirmSave}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      Yes, Save
+                    </Button>
+                    <Button
+                      onClick={cancelSave}
+                      variant="outline"
+                      className="flex-1 text-white border-gray-600 hover:bg-gray-700"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="border border-gray-700 rounded-lg p-4 sm:p-6 bg-gray-800/50">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <h2 className="text-red-500 font-semibold text-xl sm:text-2xl">
@@ -87,6 +174,7 @@ const Page = () => {
                   query.names.map((name, index) => (
                     <div
                       key={index}
+                      onClick={() => handleNameClick(name)}
                       className="bg-gray-700 text-white p-3 sm:p-4 rounded-lg text-center hover:bg-gray-600 transition-all duration-200 hover:shadow-lg hover:shadow-amber-500/20 cursor-pointer break-words"
                     >
                       <span className="text-sm sm:text-base font-medium">

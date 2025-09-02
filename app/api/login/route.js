@@ -70,7 +70,7 @@ export async function POST(req) {
     });
 
   } catch (err) {
-    console.error("Login error:", err);
+    console.error("Login error:", err);w
     return NextResponse.json(
       { success: false, error: "Login failed. Please try again." },
       { status: 500 }
